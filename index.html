@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>वीडियो डाउनलोडर</title>
+  <style>
+    body { font-family: sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .box { background: #1e293b; padding: 30px; border-radius: 12px; width: 90%; max-width: 450px; text-align: center; }
+    input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background: #2563eb; color: white; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+    #msg { margin-top: 15px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>वीडियो डाउनलोडर</h2>
+    <input type="text" id="url" placeholder="यहाँ वीडियो लिंक पेस्ट करें...">
+    <button id="btn" onclick="download()">डाउनलोड करें</button>
+    <div id="msg"></div>
+  </div>
+  <script>
+    async function download() {
+      const url = document.getElementById("url").value.trim();
+      const msg = document.getElementById("msg");
+      const btn = document.getElementById("btn");
+      if (!url) return alert("कृपया लिंक डालें!");
+      
+      btn.disabled = true;
+      msg.innerText = "वीडियो डाउनलोड हो रहा है, थोड़ा इंतज़ार करें...";
+
+      try {
+        const res = await fetch("/api/download", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+        if (!res.ok) throw new Error("डाउनलोड नहीं हो सका");
+        
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = window.URL.createObjectURL(blob);
+        a.download = "video.mp4";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        msg.innerText = "डाउनलोड पूरा हो गया!";
+      } catch (e) {
+        msg.innerText = "त्रुटि: " + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
